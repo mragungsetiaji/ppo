@@ -1,3 +1,5 @@
+import gym
+from torch import nn
 from typing import Tuple
 
 def _log_summary(
@@ -24,73 +26,73 @@ def _log_summary(
     print(f"------------------------------------------", flush=True)
     print(flush=True)
 
-def rollout(policy, env, render:bool=False) -> Tuple[float, float]:
-	""" Returns a generator to roll out each episode given a trained policy and
-		environment to test on.
+def rollout(policy: nn.Module, env:gym.Env, render:bool=False) -> Tuple[float, float]:
+    """ Returns a generator to roll out each episode given a trained policy and
+        environment to test on.
 
-		Args:
-			policy : The trained policy to test
-			env : The environment to evaluate the policy on
-			render ; Specifies whether to render or not
-		
-		Returns:
-			A generator object rollout, or iterable, which will return the latest
-			episodic length and return on each iteration of the generator.
-		Note:
-			If you're unfamiliar with Python generators, check this out:
-				https://wiki.python.org/moin/Generators
-			If you're unfamiliar with Python "yield", check this out:
-				https://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do
-	"""
-	# Rollout until user kills process
-	while True:
-		observation = env.reset()
-		done = False
+        Args:
+            policy : The trained policy to test
+            env (gym.Env): The environment to evaluate the policy on
+            render (bool): Specifies whether to render or not. Default False.
+        
+        Returns:
+            A generator object rollout, or iterable, which will return the latest
+            episodic length and return on each iteration of the generator.
+        Note:
+            If you're unfamiliar with Python generators, check this out:
+                https://wiki.python.org/moin/Generators
+            If you're unfamiliar with Python "yield", check this out:
+                https://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do
+    """
+    # Rollout until user kills process
+    while True:
+        observation = env.reset()
+        done = False
 
-		# Number of timesteps so far
-		t = 0
+        # Number of timesteps so far
+        t = 0
 
-		# Logging data
-		episode_length = 0  # episodic length
-		episode_return = 0  # episodic return
+        # Logging data
+        episode_length = 0  # episodic length
+        episode_return = 0  # episodic return
 
-		while not done:
-			t += 1
+        while not done:
+            t += 1
 
-			# Render environment if specified, off by default
-			if render:
-				env.render()
+            # Render environment if specified, off by default
+            if render:
+                env.render()
 
-			# Query deterministic action from policy and run it
-			action = policy(observation).detach().numpy()
-			observation, reward, done, _ = env.step(action)
+            # Query deterministic action from policy and run it
+            action = policy(observation).detach().numpy()
+            observation, reward, done, _ = env.step(action)
 
-			# Sum all episodic rewards as we go along
-			episode_return += reward
-			
-		# Track episodic length
-		episode_length = t
+            # Sum all episodic rewards as we go along
+            episode_return += reward
+            
+        # Track episodic length
+        episode_length = t
 
-		# returns episodic length and return in this iteration
-		yield episode_length, episode_return
+        # returns episodic length and return in this iteration
+        yield episode_length, episode_return
 
-def eval_policy(policy, env, render:bool=False) -> None:
-	""" The main function to evaluate our policy with. It will iterate a 
+def eval_policy(policy: nn.Module, env: gym.Env, render:bool=False) -> None:
+    """ The main function to evaluate our policy with. It will iterate a 
         generator object "rollout", which will simulate each episode and 
         return the most recent episode's length and return. We can then log 
         it right after. And yes, eval_policy will run forever until you kill 
         the process. 
-		
+        
         Parameters:
-			policy : The trained policy to test, basically another name for 
+            policy : The trained policy to test, basically another name for 
                 our actor model
-			env : The environment to test the policy on
-			render (bool): Whether we should render our episodes. Default False.
-	"""
-	# Rollout with the policy and environment, and log each episode's data
-	for episode_number, (episode_length, episode_return) in enumerate(
+            env (gym.Env): The environment to test the policy on
+            render (bool): Whether we should render our episodes. Default False.
+    """
+    # Rollout with the policy and environment, and log each episode's data
+    for episode_number, (episode_length, episode_return) in enumerate(
             rollout(policy, env, render)):
-		_log_summary(
+        _log_summary(
             episode_length=episode_length, 
             episode_return=episode_return, 
             episode_number=episode_number)

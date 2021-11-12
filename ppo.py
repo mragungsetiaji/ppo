@@ -335,12 +335,12 @@ class PPO:
                 V, curr_log_probs = self.evaluate(batch_observations, batch_actions)
 
                 # Calculate the ratio pi_theta(a_t | s_t) / pi_theta_k(a_t | s_t)
-				# NOTE: we just subtract the logs, which is the same as
-				# dividing the values and then canceling the log with e^log.
-				# For why we use log probabilities instead of actual probabilities,
-				# here's a great explanation: 
-				# https://cs.stackexchange.com/questions/70518/why-do-we-use-the-log-in-gradient-based-reinforcement-algorithms
-				# TL;DR makes gradient ascent easier behind the scenes.
+                # NOTE: we just subtract the logs, which is the same as
+                # dividing the values and then canceling the log with e^log.
+                # For why we use log probabilities instead of actual probabilities,
+                # here's a great explanation: 
+                # https://cs.stackexchange.com/questions/70518/why-do-we-use-the-log-in-gradient-based-reinforcement-algorithms
+                # TL;DR makes gradient ascent easier behind the scenes.
                 ratios = torch.exp(curr_log_probs - batch_log_probs)
 
                 # Calculate surrogate losses.
