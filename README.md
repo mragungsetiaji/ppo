@@ -5,20 +5,17 @@
 
 
 ## Installation:
----
 ```bash
 poetry install
 poetry shell
 ```
 
 ## How to run:
----
 ```bash
 python main.py
 ```
 
 ## Environments:
----
 Note that in this PPO implementation, you can only use the ones with Box for both observation and action spaces.
 
 Hyperparameters can be found here. https://github.com/araffin/rl-baselines-zoo/blob/master/hyperparams/ppo2.yml
